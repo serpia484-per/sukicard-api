@@ -48,6 +48,19 @@ router.get('/me', authMiddleware, async (req, res) => {
   res.json(safeUser(user));
 });
 
+// PATCH /users/me  (mounted in index.js as /users/me)
+router.patch('/me', authMiddleware, async (req, res) => {
+  const { name } = req.body;
+  if (typeof name !== 'string' || !name.trim()) {
+    return res.status(400).json({ error: 'name is required' });
+  }
+  const user = await prisma.user.update({
+    where: { id: req.userId },
+    data: { name: name.trim() },
+  });
+  res.json(safeUser(user));
+});
+
 // POST /auth/login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
