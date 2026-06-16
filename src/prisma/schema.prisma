@@ -9,6 +9,7 @@ datasource db {
 
 enum CardType {
   PHOTO
+  BARCODE
   PHONE_ID
   PARTNER
 }
