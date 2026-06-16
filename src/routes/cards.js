@@ -46,11 +46,13 @@ router.post('/', async (req, res) => {
 
 // GET /cards
 router.get('/', async (req, res) => {
+  console.time('[cards] prisma.findMany');
   const cards = await prisma.card.findMany({
     where: { userId: req.userId, isActive: true },
     include: cardIncludes,
     orderBy: { createdAt: 'desc' },
   });
+  console.timeEnd('[cards] prisma.findMany');
 
   res.json(cards);
 });

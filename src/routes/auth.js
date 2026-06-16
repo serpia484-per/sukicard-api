@@ -2,6 +2,7 @@ const { Router } = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../prisma/client');
+const authMiddleware = require('../middleware/auth');
 
 const router = Router();
 
@@ -38,6 +39,13 @@ router.post('/register', async (req, res) => {
   });
 
   res.status(201).json({ token: signToken(user.id), user: safeUser(user) });
+});
+
+// GET /auth/me
+router.get('/me', authMiddleware, async (req, res) => {
+  const user = await prisma.user.findUnique({ where: { id: req.userId } });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json(safeUser(user));
 });
 
 // POST /auth/login

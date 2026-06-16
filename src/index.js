@@ -21,6 +21,19 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', project: 'sukicard-api' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+
+  // Prime the Prisma connection pool so the first real request isn't slow
+  const prisma = require('./prisma/client');
+  await prisma.$queryRaw`SELECT 1`.catch(() => {});
+  console.log('[db] connection pool ready');
+
+  // Prevent Railway free-tier sleep by self-pinging every 10 minutes
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+    const keepAliveUrl = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}/health`;
+    setInterval(() => {
+      fetch(keepAliveUrl).catch(() => {});
+    }, 10 * 60 * 1000);
+  }
 });
