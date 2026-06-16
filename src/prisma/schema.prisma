@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CardType {
+  PHOTO
+  PHONE_ID
+  PARTNER
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  cards        Card[]
+}
+
+model Store {
+  id        String   @id @default(cuid())
+  name      String
+  category  String?
+  logoUrl   String?
+  isPartner Boolean  @default(false)
+  createdAt DateTime @default(now())
+  cards     Card[]
+}
+
+model Card {
+  id              String       @id @default(cuid())
+  userId          String
+  storeId         String?
+  storeNameCustom String?
+  type            CardType
+  color           String?
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  user            User         @relation(fields: [userId], references: [id])
+  store           Store?       @relation(fields: [storeId], references: [id])
+  cardPhoto       CardPhoto?
+  cardPhoneId     CardPhoneId?
+  cardPartner     CardPartner?
+}
+
+model CardPhoto {
+  id            String  @id @default(cuid())
+  cardId        String  @unique
+  photoUrl      String?
+  barcodeValue  String?
+  barcodeFormat String?
+  card          Card    @relation(fields: [cardId], references: [id])
+}
+
+model CardPhoneId {
+  id          String  @id @default(cuid())
+  cardId      String  @unique
+  phoneNumber String?
+  cardNumber  String?
+  card        Card    @relation(fields: [cardId], references: [id])
+}
+
+model CardPartner {
+  id            String    @id @default(cuid())
+  cardId        String    @unique
+  pointsBalance Int       @default(0)
+  lastSyncedAt  DateTime?
+  card          Card      @relation(fields: [cardId], references: [id])
+}
