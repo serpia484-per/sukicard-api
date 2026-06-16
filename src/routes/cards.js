@@ -3,7 +3,7 @@ const prisma = require('../prisma/client');
 
 const router = Router();
 
-const VALID_TYPES = ['PHOTO', 'PHONE_ID', 'PARTNER'];
+const VALID_TYPES = ['PHOTO', 'BARCODE', 'PHONE_ID', 'PARTNER'];
 
 const cardIncludes = {
   store: true,
@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
   }
 
   const detailCreate = {};
-  if (type === 'PHOTO') {
+  if (type === 'PHOTO' || type === 'BARCODE') {
     detailCreate.cardPhoto = { create: { ...cardPhoto } };
   } else if (type === 'PHONE_ID') {
     detailCreate.cardPhoneId = { create: { ...cardPhoneId } };
@@ -29,17 +29,23 @@ router.post('/', async (req, res) => {
     detailCreate.cardPartner = { create: { pointsBalance: 0 } };
   }
 
-  const card = await prisma.card.create({
-    data: {
-      userId: req.userId,
-      type,
-      storeId: storeId ?? null,
-      storeNameCustom: storeNameCustom ?? null,
-      color: color ?? null,
-      ...detailCreate,
-    },
-    include: cardIncludes,
-  });
+  let card;
+  try {
+    card = await prisma.card.create({
+      data: {
+        userId: req.userId,
+        type,
+        storeId: storeId ?? null,
+        storeNameCustom: storeNameCustom ?? null,
+        color: color ?? null,
+        ...detailCreate,
+      },
+      include: cardIncludes,
+    });
+  } catch (err) {
+    console.error('[cards] prisma.card.create error:', err);
+    return res.status(500).json({ message: err.message ?? 'Failed to create card' });
+  }
 
   res.status(201).json(card);
 });
