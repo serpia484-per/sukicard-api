@@ -83,6 +83,27 @@ router.delete('/stores/:id', adminAuth, async (req, res) => {
   }
 });
 
+// DELETE /admin/users/:id
+router.delete('/users/:id', adminAuth, async (req, res) => {
+  const { id: userId } = req.params;
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const cards = await prisma.card.findMany({ where: { userId }, select: { id: true } });
+  const cardIds = cards.map((c) => c.id);
+
+  await prisma.$transaction([
+    prisma.cardPhoto.deleteMany({ where: { cardId: { in: cardIds } } }),
+    prisma.cardPhoneId.deleteMany({ where: { cardId: { in: cardIds } } }),
+    prisma.cardPartner.deleteMany({ where: { cardId: { in: cardIds } } }),
+    prisma.card.deleteMany({ where: { userId } }),
+    prisma.user.delete({ where: { id: userId } }),
+  ]);
+
+  res.json({ success: true, deleted: { userId, cardsDeleted: cardIds.length } });
+});
+
 // GET /admin/feature-flags
 router.get('/feature-flags', adminAuth, (req, res) => {
   try {
