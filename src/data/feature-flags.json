@@ -2,5 +2,7 @@
   "enable_photo_cards": true,
   "enable_barcode_cards": true,
   "enable_partner_cards": false,
-  "maintenance_mode": false
+  "maintenance_mode": false,
+  "show_browse_stores_on_dashboard": false,
+  "cards_per_page": 7
 }

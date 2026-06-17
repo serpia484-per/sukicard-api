@@ -24,6 +24,17 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', project: 'sukicard-api' });
 });
 
+app.get('/config', (req, res) => {
+  try {
+    const flags = JSON.parse(require('fs').readFileSync(
+      require('path').join(__dirname, 'data/feature-flags.json'), 'utf8'
+    ));
+    res.json(flags);
+  } catch {
+    res.status(500).json({ error: 'Failed to read config' });
+  }
+});
+
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
 
