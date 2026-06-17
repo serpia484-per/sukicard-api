@@ -5,6 +5,7 @@ const cors = require('cors');
 const authRouter = require('./routes/auth');
 const cardsRouter = require('./routes/cards');
 const storesRouter = require('./routes/stores');
+const adminRouter = require('./routes/admin');
 const authMiddleware = require('./middleware/auth');
 
 const app = express();
@@ -17,6 +18,7 @@ app.use('/auth', authRouter);
 app.use('/users', authRouter);
 app.use('/cards', authMiddleware, cardsRouter);
 app.use('/stores', storesRouter);
+app.use('/admin', adminRouter);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', project: 'sukicard-api' });
